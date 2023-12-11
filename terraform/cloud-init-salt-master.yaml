@@ -1,0 +1,48 @@
+#cloud-config
+
+hostname: salt-master
+apt:
+  preserve_sources_list: true
+  sources:
+    salt:
+      source: "deb [signed-by=/etc/apt/trusted.gpg.d/salt.gpg arch=amd64] https://repo.saltproject.io/salt/py3/ubuntu/22.04/amd64/3006 jammy main"
+      keyid: 64CBBC8173D76B3F
+
+package_update: true
+
+packages:
+- salt-master
+- salt-ssh
+- salt-minion
+
+users:
+- default
+- name: andrey
+  sudo: ALL=(ALL) NOPASSWD:ALL
+  shell: "/bin/bash"
+  ssh_authorized_keys:
+  - ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAAEAQDAHKo/EDbCfB3JXjeJaxOw5zwaXOcynlGQLR6EY+yIDJ8nS7OPpJ7hrASYPWFz3pHKWb+y8q2F5czho746VF7tlwN9OaK1DOhHluVHnYBcE7rq0HyHwWYu9Qsq2W01WmdWQ/pExBJwa+r2ybijyiEFXWBBt8ozLCDN8VYTj+JfxM2sPhDBFySVU5mYOsI8JZExkud/2hdeFxahGC4lH9AaaMAKHgeS15bMzJjkT4SQ9Gn+87UPiZ9Iqa1fLyz4PAQl915Ke0OjPcYSDn46fMGczA9aHlBzLRK9n/GR7nF8EHVyeKOg3JvKfBBRxmSye/kR5/ELgM+xZSq1autNMR+GVv/ua8iW1p4f1bcgFAFf/SqmU3rXp89gtwbaPa2E3hlR+yFASF7crbNfQ19tHH5QEnfbDP86pjCtdtCSwkhGIQ6SoHGdV0/+x800Pv6ZFvkrQoAKZz9Gu57k43qM/IMZe7CMeaQ99xs5iVNsj0usVyCDGF9h2tDG+sojAvRcZ3DBZIno3d5M6Ik6W/P4Aa+7B/tKM/sSRG6nRrw6gPnELy0U0ZVArcoUlGjpawD1rS9LZ23lroyhQs8rD35dWYvUUEOqMoLonpXTqbzYzQVHT9SrbzmrOzqq6le0T8K7s16+mq7DInbgbwNvlQJ1QkSdImg6bS+taBIl8Js7X3j8zUeoWz9sU5zabfVPDKmu6yepNH8aHTgR3mLWex5tBIJhDj9xLVY90ia4VwZoUXmXq/kr8lm7QEepCOPRbfOLi67gvtkIgotaT42iD90tCnUGMevyWE5GceD41+V4b3fa/zpjrm3Ga96VTC2B8IOhAsxZOI1roDOnB/CuOsbPB6DpepcW6XWcnr+B8sCprdeZOUIEb7L770FDFRvfP6LuqnaI2eJ8qczQBAT3JS4VqF6n2AJXlsXT0TVbc5/bn2Z/TZJYS8n5RfCxnFmt0KVDcQwFe+5PYovxv6TBVcvFROyDRCe5DpBfnZbw77dezWu/+6TlS9SPNGWPlszBpFcka/tosqnmWcwj6vEE6pYrwGArwZ2ry0uvx/HQncMSs4i93MOCfD9KidRZejOog1FdNhy5EXy/mww25+FJsLr6hvc7oYWVRSdKdKXG+DA/r2YpaCEWmO0PaIPabRH4zuX2Q7ya9ZynRM6AcLS/HMmblsQqoNhjlYPpJ/1lXssYoCvYGnvE+JKsylV4csuMzAYVt3LnSCReoVHTymkdnXI7nG1ALkt9GoZNRR9i1Nhzx/w+Ij0HZq3R/Rt5aJ9x8AqMER4K8hCTJPQ1l2HurE9gFsAcSMwk9cx6pGYMNQ8yncSQEnyYHkCeW0BWmjzyBvGhNc2nhLh97m7UTuT8w8U3UZKh
+
+runcmd:
+- [ systemctl, start, salt-master ]
+- [ systemctl, restart, salt-minion ]
+
+write_files:
+- path: /etc/salt/minion.d/id.conf
+  defer: true
+  permissions: '0644'
+  owner: salt:salt
+  content: "id: master"
+- path: /etc/salt/minion
+  defer: true
+  permissions: '0644'
+  owner: salt:salt
+  content: |
+    startup_states: highstate
+    master:
+    - 127.0.0.1
+- path: /home/ubuntu/.ssh/id_rsa
+  encoding: b64
+  defer: true
+  permissions: '0600'
+  owner: ubuntu:ubuntu

@@ -2,5 +2,4 @@
 *.tfstate
 *.tfstate.*
 *.auto.tfvars
-ansible/inventory.ini
-ansible/binaries/*
+*.swp
