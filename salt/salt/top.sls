@@ -7,3 +7,5 @@ base:
   - wordpress
   'db*':
   - database
+  master:
+  - pull_formulas
