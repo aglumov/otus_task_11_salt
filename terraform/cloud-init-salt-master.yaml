@@ -47,9 +47,3 @@ write_files:
         - main https://github.com/aglumov/otus_task_11_salt.git:
           - env: base
           - root: salt/pillar
-
-            #- path: /home/ubuntu/.ssh/id_rsa
-            #  encoding: b64
-            #  defer: true
-            #  permissions: '0600'
-            #  owner: ubuntu:ubuntu
