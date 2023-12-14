@@ -57,7 +57,8 @@ resource "yandex_compute_instance" "lb" {
 
   metadata = {
     ssh-keys = "ubuntu:${file("~/.ssh/id_rsa.pub")}"
-    user-data = "#cloud-config\nhostname: lb${count.index}\nwrite_files:\n- path: /etc/salt/minion\n  encoding: b64\n  content: ${base64encode("startup_states: highstate\nmaster:\n- ${yandex_compute_instance.salt-master.network_interface[0].ip_address}\n")}\n- path: /etc/salt/minion.d/id.conf\n  encoding: b64\n  content: ${base64encode("id: lb${count.index}")}\n${file("cloud-init-salt-minion.yaml")}"
+    #user-data = "#cloud-config\nhostname: lb${count.index}\nwrite_files:\n- path: /etc/salt/minion\n  encoding: b64\n  content: ${base64encode("startup_states: highstate\nmaster:\n- ${yandex_compute_instance.salt-master.network_interface[0].ip_address}\n")}\n- path: /etc/salt/minion.d/id.conf\n  encoding: b64\n  content: ${base64encode("id: lb${count.index}")}\n${file("cloud-init-salt-minion.yaml")}"
+    user-data = "${file("cloud-init-salt-minion.yaml")}\n- path: /etc/salt/minion\n  defer: true\n  permissions: '0644'\n  owner: salt:salt\n  content: |\n    startup_states: highstate\n    master:\n    - ${yandex_compute_instance.salt-master.network_interface[0].ip_address}\n    id: lb${count.index}\nhostname: lb${count.index}"
   }
 }
 
@@ -90,7 +91,7 @@ resource "yandex_compute_instance" "db" {
   metadata = {
     ssh-keys  = "ubuntu:${file("~/.ssh/id_rsa.pub")}"
     #user-data = "#cloud-config\nhostname: db${count.index}\nwrite_files:\n- path: /etc/salt/minion\n  encoding: b64\n  content: ${base64encode("startup_states: highstate\nmaster:\n- ${yandex_compute_instance.salt-master.network_interface[0].ip_address}\n")}\n- path: /etc/salt/minion.d/id.conf\n  content: >\n    id: db${count.index}\n- path: /etc/salt/minion.d/mysql.conf\n  defer: true\n  permissions: '0644'\n  owner: salt:salt\n  encoding: b64\n  content: ${base64encode("mysql.unix_socket: /run/mysqld/mysqld.sock")}\n${file("cloud-init-salt-minion.yaml")}"
-    user-data = "${file("cloud-init-salt-minion.yaml")}\n- path: /etc/salt/minion\n  defer: true\n  permissions: '0644'\n  owner: salt:salt\n  content: |\n    startup_states: highstate\n    master:\n    - ${yandex_compute_instance.salt-master.network_interface[0].ip_address}\n    id: db${count.index}\nhostname: db${count.index}"
+    user-data = "${file("cloud-init-salt-minion.yaml")}\n- path: /etc/salt/minion\n  defer: true\n  permissions: '0644'\n  owner: salt:salt\n  content: |\n    startup_states: highstate\n    master:\n    - ${yandex_compute_instance.salt-master.network_interface[0].ip_address}\n    id: db${count.index}\n    mysql.unix_socket: /run/mysqld/mysqld.sock\nhostname: db${count.index}"
   }
 }
 
@@ -122,6 +123,7 @@ resource "yandex_compute_instance" "app" {
 
   metadata = {
     ssh-keys = "ubuntu:${file("~/.ssh/id_rsa.pub")}"
-    user-data = "#cloud-config\nhostname: app${count.index}\nwrite_files:\n- path: /etc/salt/minion\n  encoding: b64\n  content: ${base64encode("startup_states: highstate\nmaster:\n- ${yandex_compute_instance.salt-master.network_interface[0].ip_address}\n")}\n- path: /etc/salt/minion.d/id.conf\n  encoding: b64\n  content: ${base64encode("id: app${count.index}")}\n${file("cloud-init-salt-minion.yaml")}"
+    #user-data = "#cloud-config\nhostname: app${count.index}\nwrite_files:\n- path: /etc/salt/minion\n  encoding: b64\n  content: ${base64encode("startup_states: highstate\nmaster:\n- ${yandex_compute_instance.salt-master.network_interface[0].ip_address}\n")}\n- path: /etc/salt/minion.d/id.conf\n  encoding: b64\n  content: ${base64encode("id: app${count.index}")}\n${file("cloud-init-salt-minion.yaml")}"
+    user-data = "${file("cloud-init-salt-minion.yaml")}\n- path: /etc/salt/minion\n  defer: true\n  permissions: '0644'\n  owner: salt:salt\n  content: |\n    startup_states: highstate\n    master:\n    - ${yandex_compute_instance.salt-master.network_interface[0].ip_address}\n    id: app${count.index}\nhostname: app${count.index}"
   }
 }

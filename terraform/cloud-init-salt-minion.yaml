@@ -24,12 +24,6 @@ runcmd:
 - [ systemctl, restart, salt-minion ]
 
 write_files:
-- path: /etc/salt/minion.d/mysql.conf
-  defer: true
-  permissions: '0644'
-  owner: salt:salt
-  content: |
-    mysql.unix_socket: /run/mysqld/mysqld.sock
 - path: /etc/salt/minion.d/mine.conf
   defer: true
   permissions: '0644'
