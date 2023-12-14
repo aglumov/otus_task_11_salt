@@ -48,6 +48,26 @@ write_files:
     startup_states: highstate
     master:
     - 127.0.0.1
+
+- path: /etc/salt/master
+  defer: true
+  permissions: '0644'
+  owner: salt:salt
+  content: |
+    user: salt
+    fileserver_backend:
+    - git
+    gitfs_provider: pygit2
+    gitfs_remotes:
+    - https://github.com/aglumov/otus_task_11_salt.git:
+      - base: main
+      - root: salt/salt
+    ext_pillar:
+      - git:
+        - main https://github.com/aglumov/otus_task_11_salt.git:
+          - env: base
+          - root: salt/pillar
+
 - path: /home/ubuntu/.ssh/id_rsa
   encoding: b64
   defer: true

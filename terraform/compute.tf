@@ -70,7 +70,7 @@ resource "yandex_compute_instance" "db" {
   count                     = 1
   name                      = "db${count.index}"
   platform_id               = "standard-v3"
-  zone                      = var.yc_zones[count.index % length(var.yc_zones)]
+  zone                      = var.yc_zones[2 - count.index % length(var.yc_zones)]
   allow_stopping_for_update = true
 
   resources {
@@ -88,7 +88,7 @@ resource "yandex_compute_instance" "db" {
   }
 
   network_interface {
-    subnet_id = yandex_vpc_subnet.yc_subnet[count.index].id
+    subnet_id = yandex_vpc_subnet.yc_subnet[2- count.index % length(var.yc_zones)].id
     nat       = false
   }
 

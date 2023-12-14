@@ -1,8 +1,13 @@
-#output "nginx_public_ip_address" {
-#  description = "Public address to connect to"
-#  value       = yandex_compute_instance.lb[*].network_interface[0].nat_ip_address
-#}
-#
+output "load_balancer_public_ip_address" {
+  description = "Public address of web application"
+  value       = yandex_compute_instance.lb[0].network_interface[0].nat_ip_address
+}
+
+output "salt_master_public_ip_address" {
+  description = "Public address of web application"
+  value       = yandex_compute_instance.salt-master.network_interface[0].nat_ip_address
+}
+
 #output "lb_metadata" {
 #  value = yandex_compute_instance.lb[0].metadata.user-data
 #}
