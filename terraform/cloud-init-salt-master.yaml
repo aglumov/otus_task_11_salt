@@ -13,12 +13,8 @@ package_update: true
 packages:
 - salt-master
 - salt-ssh
-  #- salt-minion
 - libgit2-dev
 - gcc
-  #- python3-pip
-  #- python3-pygit2
-  #
 
 users:
 - default
@@ -31,24 +27,8 @@ users:
 runcmd:
 - [ salt-pip, install, pygit2==1.6.1, --no-deps]
 - [ systemctl, start, salt-master ]
-- [ systemctl, restart, salt-minion ]
-
 
 write_files:
-- path: /etc/salt/minion.d/id.conf
-  defer: true
-  permissions: '0644'
-  owner: salt:salt
-  content: "id: master"
-- path: /etc/salt/minion
-  defer: true
-  permissions: '0644'
-  owner: salt:salt
-  content: |
-    startup_states: highstate
-    master:
-    - 127.0.0.1
-
 - path: /etc/salt/master
   defer: true
   permissions: '0644'
@@ -68,8 +48,8 @@ write_files:
           - env: base
           - root: salt/pillar
 
-- path: /home/ubuntu/.ssh/id_rsa
-  encoding: b64
-  defer: true
-  permissions: '0600'
-  owner: ubuntu:ubuntu
+            #- path: /home/ubuntu/.ssh/id_rsa
+            #  encoding: b64
+            #  defer: true
+            #  permissions: '0600'
+            #  owner: ubuntu:ubuntu

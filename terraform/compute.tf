@@ -25,10 +25,7 @@ resource "yandex_compute_instance" "salt-master" {
 
   metadata = {
     ssh-keys = "ubuntu:${file("~/.ssh/id_rsa.pub")}"
-    #user-data = "#cloud-config\nssh-keys:\n  rsa_private: |\n    ${indent(4,tls_private_key.salt_master_ssh_key.private_key_openssh)}\n  rsa_public: ${tls_private_key.salt_master_ssh_key.public_key_openssh}${file("cloud-init-salt-master.cfg")}"
-    #user-data = "${file("cloud-init-salt-master.cfg")}write_files:\n- path: /home/ubuntu/.ssh/id_rsa\n  defer: true\n  permissions: '0600'\n  owner: ubuntu:ubuntu\n  content: ${tls_private_key.salt_master_ssh_key.private_key_openssh}\nruncmd:\n- [ systemctl, start, salt-master ]"
-    #user-data = "${file("cloud-init-salt-master.yaml")}\n  content: ${base64encode(tls_private_key.salt_master_ssh_key.private_key_openssh)}\n${file("cloud-init-salt-master-formulas.yaml")}"
-    user-data = "${file("cloud-init-salt-master.yaml")}\n  content: ${base64encode(tls_private_key.salt_master_ssh_key.private_key_openssh)}\n${file("cloud-init-salt-master-formulas.yaml")}"
+    user-data = "${file("cloud-init-salt-master.yaml")}"
   }
 }
 
@@ -60,9 +57,7 @@ resource "yandex_compute_instance" "lb" {
 
   metadata = {
     ssh-keys = "ubuntu:${file("~/.ssh/id_rsa.pub")}"
-    #ssh-keys  = "ubuntu:${tls_private_key.salt_master_ssh_key.public_key_openssh}"
-    #user-data = "#cloud-config\nhostname: lb${count.index}\nwrite_files:\n- path: /etc/salt/minion\n  encoding: b64\n  content: ${base64encode("master:\n- ${yandex_compute_instance.salt-master.network_interface[0].ip_address}\n")}\nssh_authorized_keys:\n- ${tls_private_key.salt_master_ssh_key.public_key_openssh}\n${file("cloud-init-salt-minion.cfg")}"
-    user-data = "#cloud-config\nhostname: lb${count.index}\nwrite_files:\n- path: /etc/salt/minion\n  encoding: b64\n  content: ${base64encode("startup_states: highstate\nmaster:\n- ${yandex_compute_instance.salt-master.network_interface[0].ip_address}\n")}\n- path: /etc/salt/minion.d/id.conf\n  encoding: b64\n  content: ${base64encode("id: lb${count.index}")}\n${file("cloud-init-salt-minion.yaml")}\nssh_authorized_keys:\n- ${tls_private_key.salt_master_ssh_key.public_key_openssh}"
+    user-data = "#cloud-config\nhostname: lb${count.index}\nwrite_files:\n- path: /etc/salt/minion\n  encoding: b64\n  content: ${base64encode("startup_states: highstate\nmaster:\n- ${yandex_compute_instance.salt-master.network_interface[0].ip_address}\n")}\n- path: /etc/salt/minion.d/id.conf\n  encoding: b64\n  content: ${base64encode("id: lb${count.index}")}\n${file("cloud-init-salt-minion.yaml")}"
   }
 }
 
@@ -94,8 +89,8 @@ resource "yandex_compute_instance" "db" {
 
   metadata = {
     ssh-keys  = "ubuntu:${file("~/.ssh/id_rsa.pub")}"
-    #user-data = "#cloud-config\nhostname: db${count.index}"
-    user-data = "#cloud-config\nhostname: db${count.index}\nwrite_files:\n- path: /etc/salt/minion\n  encoding: b64\n  content: ${base64encode("startup_states: highstate\nmaster:\n- ${yandex_compute_instance.salt-master.network_interface[0].ip_address}\n")}\n- path: /etc/salt/minion.d/id.conf\n  encoding: b64\n  content: ${base64encode("id: db${count.index}")}\n- path: /etc/salt/minion.d/mysql.conf\n  defer: true\n  permissions: '0644'\n  owner: salt:salt\n  encoding: b64\n  content: ${base64encode("mysql.unix_socket: /run/mysqld/mysqld.sock")}\n${file("cloud-init-salt-minion.yaml")}\nssh_authorized_keys:\n- ${tls_private_key.salt_master_ssh_key.public_key_openssh}"
+    #user-data = "#cloud-config\nhostname: db${count.index}\nwrite_files:\n- path: /etc/salt/minion\n  encoding: b64\n  content: ${base64encode("startup_states: highstate\nmaster:\n- ${yandex_compute_instance.salt-master.network_interface[0].ip_address}\n")}\n- path: /etc/salt/minion.d/id.conf\n  content: >\n    id: db${count.index}\n- path: /etc/salt/minion.d/mysql.conf\n  defer: true\n  permissions: '0644'\n  owner: salt:salt\n  encoding: b64\n  content: ${base64encode("mysql.unix_socket: /run/mysqld/mysqld.sock")}\n${file("cloud-init-salt-minion.yaml")}"
+    user-data = "${file("cloud-init-salt-minion.yaml")}\n- path: /etc/salt/minion\n  defer: true\n  permissions: '0644'\n  owner: salt:salt\n  content: |\n    startup_states: highstate\n    master:\n    - ${yandex_compute_instance.salt-master.network_interface[0].ip_address}\n    id: db${count.index}\nhostname: db${count.index}"
   }
 }
 
@@ -127,22 +122,6 @@ resource "yandex_compute_instance" "app" {
 
   metadata = {
     ssh-keys = "ubuntu:${file("~/.ssh/id_rsa.pub")}"
-    #user-data = "#cloud-config\nhostname: app${count.index}"
-    #user-data = "#cloud-config\nhostname: app${count.index}\nssh_authorized_keys:\n- ${tls_private_key.salt_master_ssh_key.public_key_openssh}\nwrite_files:\n- path: /etc/salt/minion.d/master.conf\n  encoding: b64\n  content: ${base64encode("master:\n- ${yandex_compute_instance.salt-master.network_interface[0].ip_address}\n")}\n- path: /etc/salt/minion.d/id.conf\n  encoding: b64\n  content: ${base64encode("id: app${count.index}")}\n${file("cloud-init-salt-minion.yaml")}"
-    user-data = "#cloud-config\nhostname: app${count.index}\nwrite_files:\n- path: /etc/salt/minion\n  encoding: b64\n  content: ${base64encode("startup_states: highstate\nmaster:\n- ${yandex_compute_instance.salt-master.network_interface[0].ip_address}\n")}\n- path: /etc/salt/minion.d/id.conf\n  encoding: b64\n  content: ${base64encode("id: app${count.index}")}\n${file("cloud-init-salt-minion.yaml")}\nssh_authorized_keys:\n- ${tls_private_key.salt_master_ssh_key.public_key_openssh}"
+    user-data = "#cloud-config\nhostname: app${count.index}\nwrite_files:\n- path: /etc/salt/minion\n  encoding: b64\n  content: ${base64encode("startup_states: highstate\nmaster:\n- ${yandex_compute_instance.salt-master.network_interface[0].ip_address}\n")}\n- path: /etc/salt/minion.d/id.conf\n  encoding: b64\n  content: ${base64encode("id: app${count.index}")}\n${file("cloud-init-salt-minion.yaml")}"
   }
 }
-
-#resource "time_sleep" "wait_2m_after_inventory" {
-#  depends_on      = [local_file.ansible_inventory]
-#  create_duration = "2m"
-#}
-#
-#resource "terraform_data" "ansible" {
-#  depends_on = [time_sleep.wait_2m_after_inventory]
-#  provisioner "local-exec" {
-#    command     = "ansible-playbook install_postgresql.yaml"
-#    working_dir = "../ansible"
-#  }
-#}
-
